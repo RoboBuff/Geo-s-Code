@@ -1,0 +1,326 @@
+package org.usfirst.frc.team1633.robot;
+
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Spark;
+import edu.wpi.first.wpilibj.SpeedControllerGroup;
+import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.drive.RobotDriveBase;
+
+public class Motortest extends IterativeRobot {
+
+//These are the variables for the channels on the Rio
+//These should be for the four base motors
+private static final int kFrontLeftChannel = 3;
+private static final int kRearLeftChannel = 2;
+private static final int kFrontRightChannel = 1;
+private static final int kRearRightChannel = 0;
+
+//These are just tests 
+private static final int testPort4 = 4;
+private static final int testPort5 = 5;
+private static final int testPort6 = 6;
+private static final int testPort7 = 7;
+
+//These would be for the lift 
+private static final int kLiftEndEffector = 8;
+private static final int kLiftEndEffector2 = 9;
+
+//These are the variables for the solenoids and where they would be found one the pneumatic 
+//control module
+private static final int LeftOpen = 4; 
+private static final int LeftClose = 5;
+
+private static final int RightOpen = 6;
+private static final int RightClose = 7;
+
+//All the declarations of the obejects
+DoubleSolenoid LeftSole;
+DoubleSolenoid RightSole;
+
+Spark LeftMotor;
+Spark LeftMotor2;
+SpeedControllerGroup LeftSide = new SpeedControllerGroup(LeftMotor, LeftMotor2);
+
+Spark RightMotor;
+Spark RightMotor2;
+SpeedControllerGroup RightSide = new SpeedControllerGroup(RightMotor, RightMotor2);
+
+//Test for the other ports 4 and 5 on the PWMs
+Spark TestPort4;
+Spark TestPort5;
+
+//Test SpeedControllerGroup object for testing ports 4 and 5 on the PWM
+SpeedControllerGroup TestPorts4and5 = new SpeedControllerGroup(TestPort4, TestPort5);
+
+//Test for the ports 6 and 7 on the PWMs
+Spark TestPort6;
+Spark TestPort7;
+
+//Test SpeedControllerGroup object for testing ports 6 and 7 on the PWM
+SpeedControllerGroup TestPorts6and7 = new SpeedControllerGroup(TestPort6, TestPort7);
+
+//These are the talons with the PWMs 
+Talon LiftMotor;
+Talon LiftMotor2;
+
+//Variable for the port # of the joystick on the Driver station
+final int JoystickChannel = 0;
+
+//Creating an joystick object with the name "stick"
+Joystick stick = new Joystick(JoystickChannel);
+
+//Creating a joystick button object with the name of "ONEButton" and assigning it 
+JoystickButton ONEButton = new JoystickButton(stick, 3);
+
+//Creating a timer obeject with the name time
+Timer time = new Timer();
+
+//Declaration of the drive 
+DifferentialDrive robotDrive = new DifferentialDrive(RightSide, LeftSide);
+//Test
+DifferentialDrive testRobotDrive = new DifferentialDrive(TestPorts4and5, TestPorts6and7);
+
+@Override
+public void robotInit() {
+
+//This would get initialized when the bot is started
+LeftSole = new DoubleSolenoid(LeftOpen, LeftClose);
+RightSole = new DoubleSolenoid(RightOpen, RightClose);
+
+LeftMotor = new Spark(kRearLeftChannel);
+LeftMotor2 = new Spark(kFrontLeftChannel);
+
+RightMotor = new Spark(kRearRightChannel);
+RightMotor2 = new Spark(kFrontRightChannel);
+
+LiftMotor = new Talon(kLiftEndEffector);
+LiftMotor = new Talon(kLiftEndEffector2);
+
+//These are for the test ports 
+TestPort4 = new Spark(testPort4);
+TestPort5 = new Spark(testPort5);
+TestPort6 = new Spark(testPort6);
+TestPort7 = new Spark(testPort7);
+
+robotDrive = new DifferentialDrive(RightSide, LeftSide);
+
+RightMotor.setInverted(true);
+
+}
+
+public void autonomousPeriodic() {
+
+//The timer would get started 
+time.start();
+
+//The robot will move at full speed foward 
+robotDrive.tankDrive(1, 1);
+
+//Telementary for autonomous
+System.out.println(time.get());
+
+}
+
+@Override
+public void teleopPeriodic() {
+
+//Telementary for the robot 
+System.out.println("STICKFORWARD" + stick.getRawAxis(1));
+System.out.println("STIKC Turn" + stick.getRawAxis(2));
+
+//Drive for the robot 
+robotDrive.arcadeDrive(-stick.getRawAxis(1), stick.getRawAxis(2));
+
+//Only implement when testing
+//testRobotDrive.arcadeDrive(stick.getRawAxis(1), stick.getRawAxis(2));
+
+//This would get the solenoids moving when the 2nd button is pressed in the joystick
+//Please refrence the Driver Station for the assignment of the buttons
+if (stick.getRawButtonPressed(2)) {
+
+if(RightSole.get() == Value.kForward && LeftSole.get() == Value.kForward) {
+
+RightSole.set(Value.kReverse);
+LeftSole.set(Value.kReverse);
+}else {
+
+RightSole.set(Value.kForward);
+LeftSole.set(Value.kForward);
+}
+
+}
+
+}
+
+}
+package org.usfirst.frc.team1633.robot;
+
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Spark;
+import edu.wpi.first.wpilibj.SpeedControllerGroup;
+import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.drive.RobotDriveBase;
+
+public class Motortest extends IterativeRobot {
+	
+	//These are the variables for the channels on the Rio
+	//These should be for the four base motors
+	private static final int kFrontLeftChannel = 3;
+	private static final int kRearLeftChannel = 2;
+	private static final int kFrontRightChannel = 1;
+	private static final int kRearRightChannel = 0;
+	
+	//These are just tests 
+	private static final int testPort4 = 4;
+	private static final int testPort5 = 5;
+	private static final int testPort6 = 6;
+	private static final int testPort7 = 7;
+	
+	//These would be for the lift 
+	private static final int kLiftEndEffector = 8;
+	private static final int kLiftEndEffector2 = 9;
+	
+	//These are the variables for the solenoids and where they would be found one the pneumatic 
+	//control module
+	private static final int LeftOpen = 4; 
+	private static final int LeftClose = 5;
+	
+	private static final int RightOpen = 6;
+	private static final int RightClose = 7;
+	
+	//All the declarations of the obejects
+	DoubleSolenoid LeftSole;
+	DoubleSolenoid RightSole;
+	
+	Spark LeftMotor;
+	Spark LeftMotor2;
+	SpeedControllerGroup LeftSide = new SpeedControllerGroup(LeftMotor, LeftMotor2);
+	
+	Spark RightMotor;
+	Spark RightMotor2;
+	SpeedControllerGroup RightSide = new SpeedControllerGroup(RightMotor, RightMotor2);
+	
+	//Test for the other ports 4 and 5 on the PWMs
+	Spark TestPort4;
+	Spark TestPort5;
+	
+	//Test SpeedControllerGroup object for testing ports 4 and 5 on the PWM
+	SpeedControllerGroup TestPorts4and5 = new SpeedControllerGroup(TestPort4, TestPort5);
+	
+	//Test for the ports 6 and 7 on the PWMs
+	Spark TestPort6;
+	Spark TestPort7;
+	
+	//Test SpeedControllerGroup object for testing ports 6 and 7 on the PWM
+	SpeedControllerGroup TestPorts6and7 = new SpeedControllerGroup(TestPort6, TestPort7);
+	
+	//These are the talons with the PWMs 
+	Talon LiftMotor;
+	Talon LiftMotor2;
+	
+	//Variable for the port # of the joystick on the Driver station
+	final int JoystickChannel = 0;
+	
+	//Creating an joystick object with the name "stick"
+	Joystick stick = new Joystick(JoystickChannel);
+
+	//Creating a joystick button object with the name of "ONEButton" and assigning it 
+	JoystickButton ONEButton = new JoystickButton(stick, 3);
+	
+	//Creating a timer obeject with the name time
+	Timer time = new Timer();
+	
+	//Declaration of the drive 
+	DifferentialDrive robotDrive = new DifferentialDrive(RightSide, LeftSide);
+	//Test
+	DifferentialDrive testRobotDrive = new DifferentialDrive(TestPorts4and5, TestPorts6and7);
+	
+	@Override
+	public void robotInit() {
+		
+		//This would get initialized when the bot is started
+		LeftSole = new DoubleSolenoid(LeftOpen, LeftClose);
+		RightSole = new DoubleSolenoid(RightOpen, RightClose);
+		
+		LeftMotor = new Spark(kRearLeftChannel);
+		LeftMotor2 = new Spark(kFrontLeftChannel);
+		
+		RightMotor = new Spark(kRearRightChannel);
+		RightMotor2 = new Spark(kFrontRightChannel);
+		
+		LiftMotor = new Talon(kLiftEndEffector);
+		LiftMotor = new Talon(kLiftEndEffector2);
+		
+		//These are for the test ports 
+		TestPort4 = new Spark(testPort4);
+		TestPort5 = new Spark(testPort5);
+		TestPort6 = new Spark(testPort6);
+		TestPort7 = new Spark(testPort7);
+		
+		robotDrive = new DifferentialDrive(RightSide, LeftSide);
+		
+		RightMotor.setInverted(true);
+		
+	}
+	
+	public void autonomousPeriodic() {
+		
+		//The timer would get started 
+		time.start();
+		
+		//The robot will move at full speed foward 
+		robotDrive.tankDrive(1, 1);
+		
+		//Telementary for autonomous
+		System.out.println(time.get());
+		
+	}
+	
+	@Override
+	public void teleopPeriodic() {
+		
+		//Telementary for the robot 
+		System.out.println("STICKFORWARD" + stick.getRawAxis(1));
+		System.out.println("STIKC Turn" + stick.getRawAxis(2));
+		
+		//Drive for the robot 
+		robotDrive.arcadeDrive(-stick.getRawAxis(1), stick.getRawAxis(2));
+		
+		//Only implement when testing
+		//testRobotDrive.arcadeDrive(stick.getRawAxis(1), stick.getRawAxis(2));
+		
+		//This would get the solenoids moving when the 2nd button is pressed in the joystick
+		//Please refrence the Driver Station for the assignment of the buttons
+		if (stick.getRawButtonPressed(2)) {
+			
+			if(RightSole.get() == Value.kForward && LeftSole.get() == Value.kForward) {
+				
+				RightSole.set(Value.kReverse);
+				LeftSole.set(Value.kReverse);
+			}else {
+				
+				RightSole.set(Value.kForward);
+				LeftSole.set(Value.kForward);
+			}
+			
+		}
+
+	}
+
+}
