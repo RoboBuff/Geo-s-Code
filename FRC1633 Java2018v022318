@@ -3,6 +3,8 @@ package org.usfirst.frc.team1633.robot;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
+import com.ctre.CANTalon;
+
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.UsbCamera;
@@ -58,6 +60,17 @@ public class GeosCode extends IterativeRobot{
 		Talon LiftMotor;
 		Talon LiftMotor2;
 		
+		/* Ok here is the thing when using the CANTalon motors is that the robo rio needs to be able to see 
+		 * these ports and without getting the rio configured to do this there is no way in knowing what 
+		 * port numbers to use for them. This would apply to the pneumatics, we have to set the ports in
+		 * order for them to actually work. Those numbers remain arbitrary as well as the pneumatics ones.
+		 */
+		
+		CANTalon leftTopClawMotor = new CANTalon(11);
+		CANTalon leftBottomClawMotor = new CANTalon(12);
+		CANTalon rightTopClawMotor = new CANTalon(13);
+		CANTalon rightBottomClawMotor = new CANTalon(14);
+		
 		final int JoystickChannel = 0;
 		
 		Joystick stick = new Joystick(JoystickChannel);
@@ -68,9 +81,12 @@ public class GeosCode extends IterativeRobot{
 		
 		/*	Ok for this part below we have the new implementation of what was the DriveRobot class.
 		 *  From what I understand these should essentially work the same way.
+		 *  
+		 *  We may have to implement a new drive class for the CANTalons...
 		 */
 
 		DifferentialDrive robotDrive = new DifferentialDrive(rightGearBox, leftGearBox);
+		
 		
 		@Override
 		public void robotInit() {
