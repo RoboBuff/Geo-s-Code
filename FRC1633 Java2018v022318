@@ -102,6 +102,10 @@ public class GeosCode extends IterativeRobot{
 			
 			/* 
 			 * This example may not be the perfect one but is something that is easily understandable.
+			 * Here is the link to how to get it to the RoboRio:
+			 * 
+			 * https://wpilib.screenstepslive.com/s/currentCS/m/vision/l/288981-using-the-microsoft-lifecam-hd-3000
+			 * 
 			 */
 			
 			new Thread(() -> {
