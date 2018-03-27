@@ -1,21 +1,25 @@
 package org.usfirst.frc.team1633.robot;
 
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+
+import edu.wpi.cscore.CvSink;
+import edu.wpi.cscore.CvSource;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.RobotDrive;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.drive.RobotDriveBase;
 
-public class Motortest extends IterativeRobot {
-
+public class GeosCode extends IterativeRobot{
+	
 		/*	Ok so we know that the PWM ports 0,1,2,3 are going to be used by the spark motor controllers 
 		 *  that leaves 4,5,6,7,8,9 to be used. The shaft encoders that are  attached to the gear boxes have  
 		 *  the ports 4-8 since we are using one for input and one for output. That now leaves with the 8 and 9 
@@ -26,8 +30,8 @@ public class Motortest extends IterativeRobot {
 		 *  
 		 */
 	
-	        private static final int fLeftPort = 0;					
-	        private static final int rLeftPort = 1;					 
+	    private static final int fLeftPort = 0;					
+	    private static final int rLeftPort = 1;					 
 		private static final int fRightPort = 2;				
 		private static final int rRightPort = 3;				        
 		 
@@ -96,8 +100,31 @@ public class Motortest extends IterativeRobot {
 			
 			frontRightSim.setInverted(true);
 			
-		}
+			/* 
+			 * This example may not be the perfect one but is something that is easily understandable.
+			 */
+			
+			new Thread(() -> {
+				
+                UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
+                camera.setResolution(640, 480);
+                
+                CvSink cvSink = CameraServer.getInstance().getVideo();
+                CvSource outputStream = CameraServer.getInstance().putVideo("Blur", 640, 480);
+                
+                Mat source = new Mat();
+                Mat output = new Mat();
+                
+                while(!Thread.interrupted()) {
+                    cvSink.grabFrame(source);
+                    Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2GRAY);
+                    outputStream.putFrame(output);
+                }
+            }).start();
+    }
+			
 		
+		@Override
 		public void autonomousPeriodic() {
 
 			time.start();
@@ -132,4 +159,7 @@ public class Motortest extends IterativeRobot {
 			}
 
 		}
-}
+
+	}
+
+
