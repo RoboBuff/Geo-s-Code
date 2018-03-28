@@ -11,6 +11,7 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Spark;
@@ -29,6 +30,9 @@ public class GeosCode extends IterativeRobot{
 		 *  
 		 *  The next change is the final int variables. This change is to help make the code more fluid and less
 		 *  chaotic. "f" stands for front and "r" stands for rear. 
+		 *  
+		 *  So another way that I am thinking of is for the channels/ports be pre-defined but set right by the code
+		 *  in the init portion of the test. Much how the talon are set. Possible thing to think about.
 		 *  
 		 */
 	
@@ -77,7 +81,11 @@ public class GeosCode extends IterativeRobot{
 
 		JoystickButton ONEButton = new JoystickButton(stick, 3);
 		
-		Timer time = new Timer();
+		//This is for the auto part of the code 
+		
+		private Timer timer;
+		private DriverStation.Alliance color;
+		private int station;
 		
 		/*	Ok for this part below we have the new implementation of what was the DriveRobot class.
 		 *  From what I understand these should essentially work the same way.
@@ -87,7 +95,10 @@ public class GeosCode extends IterativeRobot{
 
 		DifferentialDrive robotDrive = new DifferentialDrive(rightGearBox, leftGearBox);
 		
+		//Strictly for Autonomous, made private for that reason
 		
+		private DifferentialDrive Driver; 
+			
 		@Override
 		public void robotInit() {
 			
@@ -142,16 +153,17 @@ public class GeosCode extends IterativeRobot{
                 }
             }).start();
     }
+		@Override	
+		public void autonomousInit() {
 			
+			autonomousPeriodic();
+			
+		}
 		
 		@Override
 		public void autonomousPeriodic() {
 
-			time.start();
-			
-			robotDrive.tankDrive(1, 1);
-			
-			System.out.println(time.get());
+			autonomousTimer();
 			
 		}
 		
@@ -179,7 +191,48 @@ public class GeosCode extends IterativeRobot{
 			}
 
 		}
+		
+		public void Time() {
+			
+			timer = new Timer();
+			station = DriverStation.getInstance().getLocation();
+			color = DriverStation.getInstance().getAlliance();
+			
+			Driver = new DifferentialDrive(leftGearBox, rightGearBox);
+		}
+		
+		public void autonomousTimer() {
+			
+			/*
+			 * There is no way for me to know how this portion of the code will react in turn of
+			 * actually getting to where we need to get it. Although there is much forgiveness 
+			 * in this code because many of the time values can be switched around. I have already 
+			 * created a different branch on github for this extension and I will keep creating 
+			 * branch for the different fetures I keep adding to the code. Only the major ones thoug
+			 */
+			
+			timer.reset();
+			timer.start();
+			if(color == DriverStation.Alliance.Blue){
+				if(station == 1){
+					
+				}
+			
+					// This would be in theory path A 
+					if(timer.get() > 0 && timer.get() < 0.4){	     	
+						Driver.arcadeDrive(0.3, 0);
+					}
+					Driver.stopMotor();
+					if(timer.get() > 0.928575 && timer.get() <= 1.428575){	
+						Driver.tankDrive(-0.3,0.3);
+					}
+				
+					Driver.stopMotor();
+				}
+			
+			
+		}
 
 	}
-
+		
 
