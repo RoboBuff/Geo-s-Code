@@ -1,185 +1,256 @@
 package org.usfirst.frc.team1633.robot;
 
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
-import com.ctre.CANTalon;
-
-import edu.wpi.cscore.CvSink;
-import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
-public class GeosCode extends IterativeRobot{
+public class Robot extends IterativeRobot {
 	
-		/*	Ok so we know that the PWM ports 0,1,2,3 are going to be used by the spark motor controllers 
-		 *  that leaves 4,5,6,7,8,9 to be used. The shaft encoders that are  attached to the gear boxes have  
-		 *  the ports 4-8 since we are using one for input and one for output. That now leaves with the 8 and 9 
-		 *  which are going to be used by the two Talon motors that are attached.
-		 *  
-		 *  The next change is the final int variables. This change is to help make the code more fluid and less
-		 *  chaotic. "f" stands for front and "r" stands for rear. 
-		 *  
-		 */
-	
-	    private static final int fLeftPort = 0;					
-	    private static final int rLeftPort = 1;					 
-		private static final int fRightPort = 2;				
-		private static final int rRightPort = 3;				        
-		 
-		private static final int kLiftEndEffector = 8;
-		private static final int kLiftEndEffector2 = 9;
-		
-		private static final int leftSolenoidExtend = 4; 
-		private static final int leftSolenoidContract = 5;
-		
-		private static final int rightSolenoidExtend = 6;
-		private static final int rightSolenoidContract = 7;
-		
-		DoubleSolenoid leftSolenoid;
-		DoubleSolenoid rightSolenoid;
-		
-		Spark frontLeftSim;
-		Spark rearLeftSim;
-		SpeedControllerGroup leftGearBox = new SpeedControllerGroup(frontLeftSim, rearLeftSim);
-		
-		Spark frontRightSim;
-		Spark rearRightSim;
-		SpeedControllerGroup rightGearBox = new SpeedControllerGroup(frontRightSim, rearRightSim);
-	
-		Talon LiftMotor;
-		Talon LiftMotor2;
-		
-		/* Ok here is the thing when using the CANTalon motors is that the robo rio needs to be able to see 
-		 * these ports and without getting the rio configured to do this there is no way in knowing what 
-		 * port numbers to use for them. This would apply to the pneumatics, we have to set the ports in
-		 * order for them to actually work. Those numbers remain arbitrary as well as the pneumatics ones.
-		 */
-		
-		CANTalon leftTopClawMotor = new CANTalon(11);
-		CANTalon leftBottomClawMotor = new CANTalon(12);
-		CANTalon rightTopClawMotor = new CANTalon(13);
-		CANTalon rightBottomClawMotor = new CANTalon(14);
-		
-		final int JoystickChannel = 0;
-		
-		Joystick stick = new Joystick(JoystickChannel);
+	/*	Ok so we know that the PWM ports 0,1,2,3 are going to be used by the spark motor controllers 
+	 *  that leaves 4,5,6,7,8,9 to be used. The shaft encoders that are  attached to the gear boxes have  
+	 *  the ports 4-8 since we are using one for input and one for output. That now leaves with the 8 and 9 
+	 *  which are going to be used by the two Talon motors that are attached.
+	 *  
+	 *  The next change is the final int variables. This change is to help make the code more fluid and less
+	 *  chaotic. "f" stands for front and "r" stands for rear. 
+	 *  
+	 */
 
-		JoystickButton ONEButton = new JoystickButton(stick, 3);
+    private static final int fLeftPort = 2;					
+    private static final int rLeftPort = 3;					 
+	private static final int fRightPort = 0;				
+	private static final int rRightPort = 1;				        
+	 
+	private static final int kLiftEndEffector = 8;
+	private static final int kLiftEndEffector2 = 9;
+	
+	private static final int leftSolenoidExtend = 4; 
+	private static final int leftSolenoidContract = 5;
+	
+	private static final int rightSolenoidExtend = 6;
+	private static final int rightSolenoidContract = 7;
+	
+	private static final int leftGripExtend = 8;
+	private static final int leftGripContract =9;
+	
+	private static final int rightGripExtend = 10;
+	private static final int rightGripContract = 11;
 		
-		Timer time = new Timer();
-		
-		/*	Ok for this part below we have the new implementation of what was the DriveRobot class.
-		 *  From what I understand these should essentially work the same way.
-		 *  
-		 *  We may have to implement a new drive class for the CANTalons...
-		 */
+	
+	DoubleSolenoid leftSolenoid;
+	DoubleSolenoid rightSolenoid;
+	
+	DoubleSolenoid leftGripSolenoid;
+	DoubleSolenoid rightGripSolenoid;
+	
+	Spark frontLeftSim;
+	Spark rearLeftSim;
+	SpeedControllerGroup leftGearBox;
+	
+	Spark frontRightSim;
+	Spark rearRightSim;
+	SpeedControllerGroup rightGearBox;
 
-		DifferentialDrive robotDrive = new DifferentialDrive(rightGearBox, leftGearBox);
+	Talon LiftMotor;
+	Talon LiftMotor2;
+	
+	Compressor c;
+	
+	CameraServer cameraServer;
+	
+	/* Ok here is the thing when using the CANTalon motors is that the robo rio needs to be able to see 
+	 * these ports and without getting the rio configured to do this there is no way in knowing what 
+	 * port numbers to use for them. This would apply to the pneumatics, we have to set the ports in
+	 * order for them to actually work. Those numbers remain arbitrary as well as the pneumatics ones.
+	 */
+	
+	WPI_TalonSRX leftTopClawMotor;
+	WPI_TalonSRX leftBottomClawMotor;
+	WPI_TalonSRX rightTopClawMotor;
+	WPI_TalonSRX rightBottomClawMotor;
+	
+	final int JoystickChannel = 0;
+	final int joystickChannel = 1;
+	
+	Joystick stick;
+	XboxController controller;
+	
+	Timer time = new Timer();
+	
+	/*	Ok for this part below we have the new implementation of what was the DriveRobot class.
+	 *  From what I understand these should essentially work the same way.
+	 *  
+	 *  We may have to implement a new drive class for the CANTalons...
+	 */
+
+	DifferentialDrive robotDrive;
+	
+	DifferentialDrive liftDrive;
 		
+	@Override
+	public void robotInit() {
 		
-		@Override
-		public void robotInit() {
-			
-			leftSolenoid = new DoubleSolenoid(leftSolenoidExtend, leftSolenoidContract);
-			rightSolenoid = new DoubleSolenoid(rightSolenoidExtend, rightSolenoidContract);
-			
-			frontLeftSim = new Spark(fLeftPort);
-			rearLeftSim = new Spark(rLeftPort);
-			
-			frontRightSim = new Spark(fRightPort);
-			rearRightSim = new Spark(rRightPort);
-			
-			LiftMotor = new Talon(kLiftEndEffector);
-			LiftMotor = new Talon(kLiftEndEffector2);
-			
-			robotDrive = new DifferentialDrive(rightGearBox, leftGearBox);
-			
-			/*	Another way that this can be determined because I am calling the speed controller group to 
-			 *  this robotDrive class instead of what is written up above we can place:
-			 *  
-			 *  robotDrive = new DifferentialDrive(frontLeftSim, rearLeftSim, frontRigthSim, rearRightSim);
-			 * 
-			 *  That will imply that the two speed groups that were declared would have to be either commented
-			 *  out or just plain out deleted.
-			 */
-			
-			frontRightSim.setInverted(true);
-			
-			/* 
-			 * This example may not be the perfect one but is something that is easily understandable.
-			 * Here is the link to how to get it to the RoboRio:
-			 * 
-			 * https://wpilib.screenstepslive.com/s/currentCS/m/vision/l/288981-using-the-microsoft-lifecam-hd-3000
-			 * 
-			 */
-			
-			new Thread(() -> {
+		leftSolenoid = new DoubleSolenoid(leftSolenoidExtend, leftSolenoidContract);
+		rightSolenoid = new DoubleSolenoid(rightSolenoidExtend, rightSolenoidContract);
+		
+		leftGripSolenoid = new DoubleSolenoid(leftGripExtend, leftGripContract);
+		rightGripSolenoid = new DoubleSolenoid(rightGripExtend, rightGripContract);
+		
+		frontLeftSim = new Spark(fLeftPort);
+		rearLeftSim = new Spark(rLeftPort);
+		
+		frontRightSim = new Spark(fRightPort);
+		rearRightSim = new Spark(rRightPort);
+		
+		LiftMotor = new Talon(kLiftEndEffector);
+		LiftMotor2 = new Talon(kLiftEndEffector2);
+		
+		leftTopClawMotor = new WPI_TalonSRX(11);
+		leftBottomClawMotor = new WPI_TalonSRX(12);
+		rightTopClawMotor = new WPI_TalonSRX(14);
+		rightBottomClawMotor = new WPI_TalonSRX(15);
+		
+		stick = new Joystick(JoystickChannel);
+		controller = new XboxController(joystickChannel);
+		
+		leftGearBox = new SpeedControllerGroup(frontLeftSim, rearLeftSim);
+		rightGearBox = new SpeedControllerGroup(frontRightSim, rearRightSim);
+		
+		robotDrive = new DifferentialDrive(rightGearBox, leftGearBox);
+		liftDrive = new DifferentialDrive(LiftMotor, LiftMotor2);
+		/*	Another way that this can be determined because I am calling the speed controller group to 
+		 *  this robotDrive class instead of what is written up above we can place:
+		 *  
+		 *  robotDrive = new DifferentialDrive(frontLeftSim, rearLeftSim, frontRigthSim, rearRightSim);
+		 * 
+		 *  That will imply that the two speed groups that were declared would have to be either commented
+		 *  out or just plain out deleted.
+		 */
+		
+		frontRightSim.setInverted(false);
+		rearRightSim.setInverted(false);
+		
+		frontLeftSim.setInverted(false);
+		rearLeftSim.setInverted(false);
+		
+		c = new Compressor();
 				
-                UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
-                camera.setResolution(640, 480);
-                
-                CvSink cvSink = CameraServer.getInstance().getVideo();
-                CvSource outputStream = CameraServer.getInstance().putVideo("Blur", 640, 480);
-                
-                Mat source = new Mat();
-                Mat output = new Mat();
-                
-                while(!Thread.interrupted()) {
-                    cvSink.grabFrame(source);
-                    Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2GRAY);
-                    outputStream.putFrame(output);
-                }
-            }).start();
-    }
-			
+		c.setClosedLoopControl(true);
+				
+		CameraServer.getInstance();
 		
-		@Override
-		public void autonomousPeriodic() {
-
-			time.start();
+}
+	
+	@Override
+	public void autonomousInit() {
+		
+		time.start();
+		
+	}
+	
+	@Override
+	public void autonomousPeriodic() {	
+		
+		if (time.get() > 10) {
+			
+			robotDrive.tankDrive(0, 0);
+			
+		} else {
 			
 			robotDrive.tankDrive(1, 1);
 			
-			System.out.println(time.get());
-			
 		}
 		
-		@Override
-		public void teleopPeriodic() {
+		System.out.println(time.get());
+		
+	}
+	
+	@Override
+	public void teleopPeriodic() {
+		
+		c.start();
+		//System.out.println(c.getPressureSwitchValue())
+		
+		robotDrive.arcadeDrive(stick.getRawAxis(1), stick.getRawAxis(2));
+		
+		if (stick.getRawButtonPressed(2)) {
 			
-			robotDrive.arcadeDrive(-stick.getRawAxis(1), stick.getRawAxis(2));
-			
-			//Only implement when testing
-			//testRobotDrive.arcadeDrive(stick.getRawAxis(1), stick.getRawAxis(2));
-			
-			if (stick.getRawButtonPressed(2)) {
+			if(rightSolenoid.get() == Value.kForward && leftSolenoid.get() == Value.kForward) {
 				
-				if(rightSolenoid.get() == Value.kForward && leftSolenoid.get() == Value.kForward) {
-					
-					rightSolenoid.set(Value.kReverse);
-					leftSolenoid.set(Value.kReverse);
-				}else {
-					
-					rightSolenoid.set(Value.kForward);
-					leftSolenoid.set(Value.kForward);
-					
-				}
+				rightSolenoid.set(Value.kReverse);
+				leftSolenoid.set(Value.kReverse);
+			}else {
+				
+				rightSolenoid.set(Value.kForward);
+				leftSolenoid.set(Value.kForward);
 				
 			}
-
+		
 		}
+		
+		if (stick.getRawButtonPressed(5)) {
+			
+			if(rightGripSolenoid.get() == Value.kForward && leftGripSolenoid.get() == Value.kForward) {
+				
+				rightGripSolenoid.set(Value.kReverse);
+				leftGripSolenoid.set(Value.kReverse);
+				
+			}else {
+				
+				rightGripSolenoid.set(Value.kForward);
+				leftGripSolenoid.set(Value.kForward);
+			}
+		}
+		
+		if(stick.getRawButtonPressed(3)) {
+			 
+			leftTopClawMotor.set(-1);
+			leftBottomClawMotor.set(-1);
+			rightTopClawMotor.set(-1);
+			rightBottomClawMotor.set(-1);
+			
+			System.out.println("HI");
+		}else {
+			
+			leftTopClawMotor.set(0);
+			leftBottomClawMotor.set(0);
+			rightTopClawMotor.set(0);
+			rightBottomClawMotor.set(0);
+		}
+		
+		if (stick.getRawButtonPressed(6)) {
+			
+			LiftMotor.set(-1);
+			LiftMotor2.set(-1);
+			System.out.println("Hey");
+			
+		}else if (stick.getRawButtonPressed(4)){
+			
+			LiftMotor.set(-1);
+			LiftMotor2.set(-1);
+			System.out.println("Hello");
+			
+		}else {
+			
+			LiftMotor.set(0);
+			LiftMotor2.set(0);
+		}
+
 
 	}
 
-
+}
